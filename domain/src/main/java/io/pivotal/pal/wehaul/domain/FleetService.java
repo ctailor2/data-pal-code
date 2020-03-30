@@ -35,11 +35,7 @@ public class FleetService {
             throw new IllegalArgumentException(String.format("No truck found with VIN=%s", vin));
         }
 
-        if (truck.getStatus() != TruckStatus.RENTABLE) {
-            throw new IllegalStateException("Truck cannot be inspected");
-        }
-
-        truck.setStatus(TruckStatus.IN_INSPECTION);
+        truck.sendForInspection();
 
         truckRepository.save(truck);
     }
@@ -51,15 +47,7 @@ public class FleetService {
         if (truck == null) {
             throw new IllegalArgumentException(String.format("No truck found with VIN=%s", vin));
         }
-        if (truck.getStatus() != TruckStatus.IN_INSPECTION) {
-            throw new IllegalStateException("Truck is not currently in inspection");
-        }
-        if (truck.getOdometerReading() > odometerReading) {
-            throw new IllegalArgumentException("Odometer reading cannot be less than previous reading");
-        }
-
-        truck.setStatus(TruckStatus.RENTABLE);
-        truck.setOdometerReading(odometerReading);
+        truck.returnFromInspection(odometerReading);
         truckRepository.save(truck);
 
         TruckInspection truckInspection = new TruckInspection(vin, odometerReading, notes);

@@ -1,5 +1,7 @@
 package io.pivotal.pal.wehaul.domain;
 
+import java.util.List;
+
 public class TruckAllocationService {
 
     private final TruckRepository truckRepository;
@@ -9,7 +11,11 @@ public class TruckAllocationService {
     }
 
     public Truck allocateTruck(TruckSize truckSize) {
-        // TODO: implement for lab exercise
-        return null;
+        List<Truck> availableTrucks =
+                truckRepository.findAllByTruckSizeAndStatus(truckSize, TruckStatus.RENTABLE);
+        if (availableTrucks.size() < 1) {
+            throw new IllegalStateException("No trucks available to rent");
+        }
+        return availableTrucks.get(0);
     }
 }

@@ -44,16 +44,6 @@ public class FleetController {
         return ResponseEntity.ok(trucksDto);
     }
 
-    private TruckDto mapTruckToDto(Truck truck) {
-        return new TruckDto(
-                truck.getVin().getVin(),
-                truck.getStatus().name(),
-                truck.getOdometerReading(),
-                truck.getTruckSize().name(),
-                truck.getTruckLength()
-        );
-    }
-
     @PostMapping("/{vin}/send-for-inspection")
     public ResponseEntity<Void> sendForInspection(@PathVariable String vin) {
 
@@ -72,6 +62,16 @@ public class FleetController {
 
         fleetService.returnFromInspection(Vin.of(vin), notes, odometerReading);
         return ResponseEntity.ok().build();
+    }
+
+    private TruckDto mapTruckToDto(Truck truck) {
+        return new TruckDto(
+                truck.getVin().getVin(),
+                truck.getStatus().name(),
+                truck.getOdometerReading(),
+                truck.getTruckSize().name(),
+                truck.getTruckLength()
+        );
     }
 
     static class ReturnFromInspectionDto {

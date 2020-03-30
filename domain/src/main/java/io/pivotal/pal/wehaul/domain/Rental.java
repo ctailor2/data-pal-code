@@ -30,11 +30,22 @@ public class Rental {
     }
 
     public void pickUp() {
-        // TODO: implement for lab exercise
+        if (this.getDistanceTraveled() != null) {
+            throw new IllegalStateException("Rental has already been picked up");
+        }
+
+        this.setDistanceTraveled(0);
     }
 
     public void dropOff(int distanceTraveled) {
-        // TODO: implement for lab exercise
+        if (this.getDistanceTraveled() == null) {
+            throw new IllegalStateException("Cannot drop off before picking up rental");
+        }
+        if (this.getDistanceTraveled() != 0) {
+            throw new IllegalStateException("Rental is already dropped off");
+        }
+
+        this.setDistanceTraveled(distanceTraveled);
     }
 
     public ConfirmationNumber getConfirmationNumber() {

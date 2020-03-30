@@ -22,16 +22,7 @@ public class RentalService {
 
     @Transactional
     public void create(String customerName, TruckSize truckSize) {
-
-        // business invariant that applies across many trucks
-        // domain logic in transaction script app service
-        List<Truck> availableTrucks =
-                truckRepository.findAllByTruckSizeAndStatus(truckSize, TruckStatus.RENTABLE);
-        if (availableTrucks.size() < 1) {
-            throw new IllegalStateException("No trucks available to rent");
-        }
-
-        Truck truck = availableTrucks.get(0);
+        Truck truck = truckAllocationService.allocateTruck(truckSize);
 
         truck.reserve();
         truckRepository.save(truck);
@@ -46,20 +37,12 @@ public class RentalService {
         if (rental == null) {
             throw new IllegalArgumentException(String.format("No rental found for id=%s", confirmationNumber));
         }
-        if (rental.getDistanceTraveled() != null) {
-            throw new IllegalStateException("Rental has already been picked up");
-        }
-
-        rental.setDistanceTraveled(0);
+        rental.pickUp();
 
         rentalRepository.save(rental);
 
         Truck truck = truckRepository.findOne(rental.getTruckVin());
-        if (truck.getStatus() != TruckStatus.RESERVED) {
-            throw new IllegalStateException("Only reserved trucks can be picked up");
-        }
-
-        truck.setStatus(TruckStatus.RENTED);
+        truck.pickUp();
         truckRepository.save(truck);
     }
 
@@ -69,14 +52,7 @@ public class RentalService {
         if (rental == null) {
             throw new IllegalArgumentException(String.format("No rental found for id=%s", confirmationNumber));
         }
-        if (rental.getDistanceTraveled() == null) {
-            throw new IllegalStateException("Cannot drop off before picking up rental");
-        }
-        if (rental.getDistanceTraveled() != 0) {
-            throw new IllegalStateException("Rental is already dropped off");
-        }
-
-        rental.setDistanceTraveled(distanceTraveled);
+        rental.dropOff(distanceTraveled);
 
         rentalRepository.save(rental);
 
@@ -85,15 +61,7 @@ public class RentalService {
 
         int odometerReading = truck.getOdometerReading() + distanceTraveled;
 
-        if (truck.getStatus() != TruckStatus.RENTED) {
-            throw new IllegalStateException("Truck is not currently rented");
-        }
-        if (truck.getOdometerReading() > odometerReading) {
-            throw new IllegalArgumentException("Odometer reading cannot be less than previous reading");
-        }
-
-        truck.setStatus(TruckStatus.RENTABLE);
-        truck.setOdometerReading(odometerReading);
+        truck.returnToService(odometerReading);
 
         truckRepository.save(truck);
     }

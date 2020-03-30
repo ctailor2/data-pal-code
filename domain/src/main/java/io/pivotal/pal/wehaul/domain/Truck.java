@@ -40,7 +40,15 @@ public class Truck {
     }
 
     public void returnFromInspection(int odometerReading) {
-        // TODO: implement for lab exercise
+        if (this.getStatus() != TruckStatus.IN_INSPECTION) {
+            throw new IllegalStateException("Truck is not currently in inspection");
+        }
+        if (this.getOdometerReading() > odometerReading) {
+            throw new IllegalArgumentException("Odometer reading cannot be less than previous reading");
+        }
+
+        this.setStatus(TruckStatus.RENTABLE);
+        this.setOdometerReading(odometerReading);
     }
 
     public void reserve() {
@@ -52,15 +60,31 @@ public class Truck {
     }
 
     public void pickUp() {
-        // TODO: implement for lab exercise
+        if (this.getStatus() != TruckStatus.RESERVED) {
+            throw new IllegalStateException("Only reserved trucks can be picked up");
+        }
+
+        this.setStatus(TruckStatus.RENTED);
     }
 
     public void returnToService(int odometerReading) {
-        // TODO: implement for lab exercise
+        if (this.getStatus() != TruckStatus.RENTED) {
+            throw new IllegalStateException("Truck is not currently rented");
+        }
+        if (this.getOdometerReading() > odometerReading) {
+            throw new IllegalArgumentException("Odometer reading cannot be less than previous reading");
+        }
+
+        this.setStatus(TruckStatus.RENTABLE);
+        this.setOdometerReading(odometerReading);
     }
 
     public void sendForInspection() {
-        // TODO: implement for lab exercise
+        if (this.getStatus() != TruckStatus.RENTABLE) {
+            throw new IllegalStateException("Truck cannot be inspected");
+        }
+
+        this.setStatus(TruckStatus.IN_INSPECTION);
     }
 
     public Vin getVin() {
