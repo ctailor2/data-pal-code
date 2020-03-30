@@ -87,7 +87,6 @@ public class FleetTruckTest {
         fleetTruck.removeFromYard();
         int distanceTraveled = 101;
 
-
         fleetTruck.returnToYard(distanceTraveled);
 
 

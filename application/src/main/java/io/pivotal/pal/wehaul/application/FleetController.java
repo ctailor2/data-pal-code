@@ -5,8 +5,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.pivotal.pal.wehaul.fleet.domain.FleetService;
 import io.pivotal.pal.wehaul.fleet.domain.FleetTruck;
 import io.pivotal.pal.wehaul.fleet.domain.Vin;
-import io.pivotal.pal.wehaul.rental.domain.RentalService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,23 +17,13 @@ import java.util.stream.Collectors;
 public class FleetController {
 
     private final FleetService fleetService;
-    private final RentalService rentalService;
 
     public FleetController(FleetService fleetService) {
         this.fleetService = fleetService;
-        this.rentalService = null;
-    }
-
-    @Deprecated
-    @Autowired
-    public FleetController(FleetService fleetService, RentalService rentalService) {
-        this.fleetService = fleetService;
-        this.rentalService = rentalService;
     }
 
     @PostMapping
     public ResponseEntity<Void> buyTruck(@RequestBody BuyTruckDto buyTruckDto) {
-
         fleetService.buyTruck(
                 Vin.of(buyTruckDto.getVin()),
                 buyTruckDto.getOdometerReading(),
@@ -58,9 +46,7 @@ public class FleetController {
 
     @PostMapping("/{vin}/send-for-inspection")
     public ResponseEntity<Void> sendForInspection(@PathVariable String vin) {
-
         fleetService.sendForInspection(Vin.of(vin));
-        rentalService.preventRenting(io.pivotal.pal.wehaul.rental.domain.Vin.of(vin));
         return ResponseEntity.ok().build();
     }
 
@@ -74,7 +60,6 @@ public class FleetController {
         int odometerReading = returnFromInspectionDto.getOdometerReading();
 
         fleetService.returnFromInspection(Vin.of(vin), notes, odometerReading);
-        rentalService.allowRenting(io.pivotal.pal.wehaul.rental.domain.Vin.of(vin));
 
         return ResponseEntity.ok().build();
     }

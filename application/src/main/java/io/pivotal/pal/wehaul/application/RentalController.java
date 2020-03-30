@@ -37,8 +37,7 @@ public class RentalController {
 
         String customerName = createRentalDto.getCustomerName();
         String truckSize = createRentalDto.getTruckSize();
-        RentalTruck rentalTruck = rentalService.create(customerName, TruckSize.valueOf(truckSize));
-        fleetService.removeFromYard(Vin.of(rentalTruck.getVin().getVin()));
+        rentalService.create(customerName, TruckSize.valueOf(truckSize));
 
         return ResponseEntity.ok().build();
     }
@@ -55,8 +54,7 @@ public class RentalController {
                                               @RequestBody DropOffRentalDto dropOffRentalDto) {
 
         int distanceTraveled = dropOffRentalDto.getDistanceTraveled();
-        RentalTruck rentalTruck = rentalService.dropOff(ConfirmationNumber.of(confirmationNumber), distanceTraveled);
-        fleetService.returnToYard(Vin.of(rentalTruck.getVin().getVin()), dropOffRentalDto.getDistanceTraveled());
+        rentalService.dropOff(ConfirmationNumber.of(confirmationNumber), distanceTraveled);
 
         return ResponseEntity.ok().build();
     }
