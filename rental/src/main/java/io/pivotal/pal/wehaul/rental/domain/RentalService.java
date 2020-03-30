@@ -8,26 +8,13 @@ import java.util.stream.StreamSupport;
 public class RentalService {
 
     private final TruckAllocationService truckAllocationService;
-    private final RentalRepository rentalRepository;
     private final RentalTruckRepository rentalTruckRepository;
     private final TruckSizeChart truckSizeChart;
 
-    @Deprecated
-    public RentalService(TruckAllocationService truckAllocationService,
-                         RentalRepository rentalRepository,
-                         RentalTruckRepository rentalTruckRepository,
-                         TruckSizeChart truckSizeChart) {
-        this.truckAllocationService = truckAllocationService;
-        this.rentalRepository = rentalRepository;
-        this.rentalTruckRepository = rentalTruckRepository;
-        this.truckSizeChart = truckSizeChart;
-    }
-
     public RentalService(TruckAllocationService truckAllocationService,
                          RentalTruckRepository rentalTruckRepository,
                          TruckSizeChart truckSizeChart) {
         this.truckAllocationService = truckAllocationService;
-        this.rentalRepository = null;
         this.rentalTruckRepository = rentalTruckRepository;
         this.truckSizeChart = truckSizeChart;
     }
@@ -38,53 +25,31 @@ public class RentalService {
         rentalTruckRepository.save(rentalTruck);
     }
 
-    @Transactional
     public RentalTruck create(String customerName, TruckSize truckSize) {
-
         RentalTruck rentalTruck = truckAllocationService.allocateTruck(truckSize);
-
-        rentalTruck.reserve(null);
+        rentalTruck.reserve(customerName);
         rentalTruckRepository.save(rentalTruck);
-
-        Rental rental = new Rental(customerName, rentalTruck.getVin());
-        rentalRepository.save(rental);
-
-        // TODO: implement for lab exercise
-        return null;
+        return rentalTruck;
     }
 
-    @Transactional
     public void pickUp(ConfirmationNumber confirmationNumber) {
-        Rental rental = rentalRepository.findOne(confirmationNumber);
-        if (rental == null) {
+        RentalTruck rentalTruck = rentalTruckRepository.findOneByRentalConfirmationNumber(confirmationNumber.getConfirmationNumber());
+        if (rentalTruck == null) {
             throw new IllegalArgumentException(String.format("No rental found for id=%s", confirmationNumber));
         }
 
-        rental.pickUp();
-        rentalRepository.save(rental);
-
-        RentalTruck rentalTruck = rentalTruckRepository.findOne(rental.getTruckVin());
         rentalTruck.pickUp();
         rentalTruckRepository.save(rentalTruck);
     }
 
-    @Transactional
     public RentalTruck dropOff(ConfirmationNumber confirmationNumber, int distanceTraveled) {
-        Rental rental = rentalRepository.findOne(confirmationNumber);
-        if (rental == null) {
+        RentalTruck rentalTruck = rentalTruckRepository.findOneByRentalConfirmationNumber(confirmationNumber.getConfirmationNumber());
+        if (rentalTruck == null) {
             throw new IllegalArgumentException(String.format("No rental found for id=%s", confirmationNumber));
         }
-
-        rental.dropOff(distanceTraveled);
-        rentalRepository.save(rental);
-
-        Vin vin = rental.getTruckVin();
-        RentalTruck rentalTruck = rentalTruckRepository.findOne(vin);
-        rentalTruck.dropOff(-1);
+        rentalTruck.dropOff(distanceTraveled);
         rentalTruckRepository.save(rentalTruck);
-
-        // TODO: implement for lab exercise
-        return null;
+        return rentalTruck;
     }
 
     public void preventRenting(Vin vin) {

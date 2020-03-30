@@ -17,6 +17,10 @@ public class RentalTruck {
     @Column
     private TruckSize truckSize;
 
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinColumn(name = "truckVin")
+    private Rental rental;
+
     RentalTruck() {
         // default constructor required by JPA
     }
@@ -31,7 +35,7 @@ public class RentalTruck {
         if (status != RentalTruckStatus.RENTABLE) {
             throw new IllegalStateException("Truck cannot be reserved");
         }
-
+        this.rental = new Rental(customerName, this.vin);
         this.status = RentalTruckStatus.RESERVED;
     }
 
@@ -39,7 +43,7 @@ public class RentalTruck {
         if (status != RentalTruckStatus.RESERVED) {
             throw new IllegalStateException("Only reserved trucks can be picked up");
         }
-
+        this.rental.pickUp();
         this.status = RentalTruckStatus.RENTED;
     }
 
@@ -47,7 +51,7 @@ public class RentalTruck {
         if (status != RentalTruckStatus.RENTED) {
             throw new IllegalStateException("Truck is not currently rented");
         }
-
+        this.rental.dropOff(distanceTraveled);
         this.status = RentalTruckStatus.RENTABLE;
     }
 
@@ -79,8 +83,7 @@ public class RentalTruck {
     }
 
     public Rental getRental() {
-        // TODO: implement for lab exercise
-        return null;
+        return rental;
     }
 
     @Override
