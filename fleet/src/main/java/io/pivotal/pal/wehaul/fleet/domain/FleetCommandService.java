@@ -1,7 +1,5 @@
 package io.pivotal.pal.wehaul.fleet.domain;
 
-import java.util.Collection;
-
 public class FleetCommandService {
 
     private final FleetTruckRepository fleetTruckRepository;
@@ -62,9 +60,5 @@ public class FleetCommandService {
         truck.returnToYard(distanceTraveled);
 
         fleetTruckRepository.save(truck);
-    }
-
-    public Collection<FleetTruck> findAll() {
-        return fleetTruckRepository.findAll();
     }
 }

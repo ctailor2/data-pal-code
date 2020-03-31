@@ -27,8 +27,9 @@ public class EventPublishingFleetTruckRepository implements FleetTruckRepository
 
         FleetTruck savedFleetTruck = fleetTruckRepository.save(fleetTruck);
 
-        dirtyEvents.stream()
-                .forEach(event -> applicationEventPublisher.publishEvent(event));
+        dirtyEvents
+                .forEach(applicationEventPublisher::publishEvent);
+        applicationEventPublisher.publishEvent(new FleetTruckUpdated(fleetTruck));
 
         return savedFleetTruck;
     }
@@ -36,10 +37,5 @@ public class EventPublishingFleetTruckRepository implements FleetTruckRepository
     @Override
     public FleetTruck findOne(Vin vin) {
         return fleetTruckRepository.findOne(vin);
-    }
-
-    @Override
-    public List<FleetTruck> findAll() {
-        return fleetTruckRepository.findAll();
     }
 }

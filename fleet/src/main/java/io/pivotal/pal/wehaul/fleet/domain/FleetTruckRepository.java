@@ -10,6 +10,4 @@ public interface FleetTruckRepository extends Repository<FleetTruck, Vin> {
     FleetTruck save(FleetTruck fleetTruck);
 
     FleetTruck findOne(Vin vin);
-
-    List<FleetTruck> findAll();
 }

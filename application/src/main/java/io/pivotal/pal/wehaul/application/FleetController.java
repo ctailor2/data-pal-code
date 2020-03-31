@@ -37,7 +37,7 @@ public class FleetController {
 
     @GetMapping
     public ResponseEntity<Collection<TruckDto>> getAllTrucks() {
-        Collection<FleetTruck> fleetTrucks = fleetCommandService.findAll();
+        Collection<FleetTruckSnapshot> fleetTrucks = fleetQueryService.findAll();
 
         List<TruckDto> trucksDto = fleetTrucks.stream()
                 .map(truck -> mapTruckToDto(truck))
@@ -77,20 +77,13 @@ public class FleetController {
         );
     }
 
-    private TruckDto mapTruckToDto(FleetTruck fleetTruck) {
-        Integer lastInspectionOdometerReading = null;
-        if (fleetTruck.getInspections().size() > 0) {
-            lastInspectionOdometerReading = fleetTruck.getInspections()
-                    .get(fleetTruck.getInspections().size() - 1)
-                    .getOdometerReading();
-        }
-
+    private TruckDto mapTruckToDto(FleetTruckSnapshot fleetTruck) {
         return new TruckDto(
-                fleetTruck.getVin().getVin(),
-                fleetTruck.getStatus().toString(),
+                fleetTruck.getVin(),
+                fleetTruck.getStatus(),
                 fleetTruck.getOdometerReading(),
                 fleetTruck.getTruckLength(),
-                lastInspectionOdometerReading
+                fleetTruck.getLastInspectionOdometerReading()
         );
     }
 

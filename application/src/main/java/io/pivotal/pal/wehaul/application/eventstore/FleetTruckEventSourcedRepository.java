@@ -7,13 +7,10 @@ import io.pivotal.pal.wehaul.fleet.domain.FleetTruck;
 import io.pivotal.pal.wehaul.fleet.domain.FleetTruckRepository;
 import io.pivotal.pal.wehaul.fleet.domain.Vin;
 import io.pivotal.pal.wehaul.fleet.domain.event.FleetTruckEvent;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.NoRepositoryBean;
 
 import java.io.IOException;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -53,21 +50,6 @@ public class FleetTruckEventSourcedRepository implements FleetTruckRepository {
         List<FleetTruckEvent> fleetTruckEvents = mapEntitiesToEvents(eventEntities);
 
         return FleetTruck.fromEvents(fleetTruckEvents);
-    }
-
-    @Override
-    public List<FleetTruck> findAll() {
-        Map<String, List<FleetTruckEventStoreEntity>> eventEntitiesByVin =
-                eventStoreRepository.findAll(new Sort(Sort.Direction.ASC, "key.vin", "key.version"))
-                        .stream()
-                        .collect(Collectors.groupingBy(eventEntity -> eventEntity.getKey().getVin()));
-
-        return eventEntitiesByVin.entrySet()
-                .stream()
-                .map(eventEntities -> mapEntitiesToEvents(eventEntities.getValue()))
-                .map(FleetTruck::fromEvents)
-                .sorted(Comparator.comparing(truck -> truck.getVin().getVin()))
-                .collect(Collectors.toList());
     }
 
     private List<FleetTruckEventStoreEntity> mapEventToEntities(List<FleetTruckEvent> events, Integer versionStart) {

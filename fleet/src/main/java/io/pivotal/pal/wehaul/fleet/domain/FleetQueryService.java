@@ -11,7 +11,6 @@ public class FleetQueryService {
     }
 
     public Collection<FleetTruckSnapshot> findAll() {
-        // TODO implement me
-        return null;
+        return fleetTruckSnapshotRepository.findAll();
     }
 }
