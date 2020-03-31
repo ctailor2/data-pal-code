@@ -1,5 +1,7 @@
 package io.pivotal.pal.wehaul.application.eventstore;
 
+import io.pivotal.pal.wehaul.fleet.domain.event.FleetTruckEvent;
+
 import javax.persistence.Column;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
@@ -14,12 +16,12 @@ public class FleetTruckEventStoreEntity {
     private FleetTruckEventStoreEntityKey key;
 
     @Column
-    private Class<?> eventClass;
+    private Class<? extends FleetTruckEvent> eventClass;
 
     @Column(length = 4096)
     private String data;
 
-    public FleetTruckEventStoreEntity(FleetTruckEventStoreEntityKey key, Class<?> eventClass, String data) {
+    public FleetTruckEventStoreEntity(FleetTruckEventStoreEntityKey key, Class<? extends FleetTruckEvent> eventClass, String data) {
         this.key = key;
         this.eventClass = eventClass;
         this.data = data;
@@ -33,7 +35,7 @@ public class FleetTruckEventStoreEntity {
         return key;
     }
 
-    public Class<?> getEventClass() {
+    public Class<? extends FleetTruckEvent> getEventClass() {
         return eventClass;
     }
 

@@ -11,10 +11,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.NoRepositoryBean;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -33,18 +30,19 @@ public class FleetTruckEventSourcedRepository implements FleetTruckRepository {
 
     @Override
     public FleetTruck save(FleetTruck fleetTruck) {
-        // TODO replace me
-        List<FleetTruckEventStoreEntity> eventEntities = Collections.emptyList();
-
-        eventStoreRepository.save(eventEntities);
-
+        List<FleetTruckEventStoreEntity> fleetTruckEventStoreEntities = mapEventToEntities(fleetTruck.getDirtyEvents(), fleetTruck.getVersion());
+        eventStoreRepository.save(fleetTruckEventStoreEntities);
         return findOne(fleetTruck.getVin());
     }
 
     @Override
     public FleetTruck findOne(Vin vin) {
-        // TODO replace me
-        return null;
+        List<FleetTruckEventStoreEntity> fleetTruckEventStoreEntities = eventStoreRepository.findAllByKeyVinOrderByKeyVersion(vin.getVin());
+        if (fleetTruckEventStoreEntities.isEmpty()) {
+            return null;
+        }
+        List<FleetTruckEvent> fleetTruckEvents = mapEntitiesToEvents(fleetTruckEventStoreEntities);
+        return FleetTruck.fromEvents(fleetTruckEvents);
     }
 
     @Override
@@ -63,21 +61,20 @@ public class FleetTruckEventSourcedRepository implements FleetTruckRepository {
     }
 
     private List<FleetTruckEventStoreEntity> mapEventToEntities(List<FleetTruckEvent> events, Integer versionStart) {
-
         return IntStream.range(0, events.size())
                 .mapToObj(i -> {
-                    FleetTruckEvent event = events.get(i);
-                    String eventJson = serializeEvent(event);
-
-                    // TODO replace me
-                    return (FleetTruckEventStoreEntity) null;
+                    FleetTruckEvent fleetTruckEvent = events.get(i);
+                        return new FleetTruckEventStoreEntity(
+                                new FleetTruckEventStoreEntityKey(fleetTruckEvent.getVin(), versionStart + 1 + i),
+                                fleetTruckEvent.getClass(),
+                                serializeEvent(fleetTruckEvent));
                 })
                 .collect(Collectors.toList());
     }
 
     private List<FleetTruckEvent> mapEntitiesToEvents(List<FleetTruckEventStoreEntity> eventEntities) {
         return eventEntities.stream()
-                .map(eventEntity -> deserializeEvent(eventEntity))
+                .map(this::deserializeEvent)
                 .collect(Collectors.toList());
     }
 
@@ -91,7 +88,7 @@ public class FleetTruckEventSourcedRepository implements FleetTruckRepository {
 
     private FleetTruckEvent deserializeEvent(FleetTruckEventStoreEntity eventEntity) {
         try {
-            return (FleetTruckEvent) objectMapper.readValue(eventEntity.getData(), eventEntity.getEventClass());
+            return objectMapper.readValue(eventEntity.getData(), eventEntity.getEventClass());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

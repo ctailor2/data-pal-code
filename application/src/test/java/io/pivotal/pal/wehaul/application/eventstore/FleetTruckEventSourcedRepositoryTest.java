@@ -59,7 +59,6 @@ public class FleetTruckEventSourcedRepositoryTest {
 
         FleetTruck fleetTruck = FleetTruck.fromEvents(eventsBeforeSave);
 
-
         fleetTruck.returnFromInspection("some-notes", 100);
         fleetTruckRepository.save(fleetTruck);
 
